@@ -1,22 +1,63 @@
 const form = document.getElementById('form');
 const input = document.getElementById('input');
-const todos = document.getElementById('todos');
+const todosUl = document.getElementById('todos');
+const todos = JSON.parse(localStorage.getItem('todos'));
+
+if(todos) {
+    todos.forEach(todo => {
+        addTodo(todo)
+    });
+}
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const todoText = input.value;
+    addTodo();
+});
+
+
+function addTodo(todo) {
+    let todoText = input.value;
+    if(todo){
+        todoText = todo.text;
+    }
 
     if(todoText) {
         const todoEl = document.createElement('li');
+        if(todo && todo.completed){
+            todoEl.classList.add('completed');
+        }
         todoEl.innerText = todoText;
 
         todoEl.addEventListener('click', () => {
-            todoEl.remove();
+            todoEl.classList.toggle('completed');
+            update();
         });
         
-        todos.appendChild(todoEl);
+        todoEl.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            todoEl.remove();
+            update();
+        })
+
+        todosUl.appendChild(todoEl);
 
         input.value = '';
+
+        update();
     }
-});
+}
+
+function update() {
+    const todoElements = document.querySelectorAll('li');
+    const todos = [];
+
+    todoElements.forEach((todoEl) => {
+        todos.push({
+            text: todoEl.innerText,
+            completed: todoEl.classList.contains('completed')
+        });
+    });
+
+    localStorage.setItem('todos', JSON.stringify(todos));
+}
